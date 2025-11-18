@@ -6,6 +6,7 @@ import 'firebase_options.dart';
 // App imports
 import 'app/app_router.dart';
 import 'app/theme.dart';
+import 'app/theme_notifier.dart';
 import 'services/auth_service.dart';
 import 'screens/splash_screen.dart';
 
@@ -27,21 +28,28 @@ class MessageBoardApp extends StatelessWidget {
         ChangeNotifierProvider<AuthService>(
           create: (_) => AuthService(),
         ),
+        ChangeNotifierProvider<ThemeNotifier>(
+          create: (_) => ThemeNotifier(),
+        ),
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Message Board App',
+      child: Consumer<ThemeNotifier>(
+        builder: (context, themeNotifier, _) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'Message Board App',
 
-        // THEME
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.light,
+            // THEME
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeNotifier.themeMode,
 
-        // ROUTES
-        onGenerateRoute: AppRouter.generateRoute,
+            // ROUTES
+            onGenerateRoute: AppRouter.generateRoute,
 
-        // SPLASH SCREEN
-        home: const SplashScreen(),
+            // SPLASH SCREEN
+            home: const SplashScreen(),
+          );
+        },
       ),
     );
   }

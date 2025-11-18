@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../app/theme_notifier.dart';
 import '../../services/auth_service.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -51,6 +52,20 @@ class SettingsScreen extends StatelessWidget {
                   const SnackBar(
                     content: Text('Change login not implemented yet.'),
                   ),
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Appearance',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Consumer<ThemeNotifier>(
+              builder: (context, themeNotifier, _) {
+                return SwitchListTile(
+                  title: const Text('Dark mode'),
+                  value: themeNotifier.isDarkMode,
+                  onChanged: themeNotifier.toggleDark,
                 );
               },
             ),
