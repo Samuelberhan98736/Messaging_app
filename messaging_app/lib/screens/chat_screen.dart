@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ChatScreen extends StatefulWidget {
   final String boardId;
@@ -21,7 +22,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _sendMessage() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (_msgController.text.trim().isEmpty) return;
+    if (_msgController.text.trim().isEmpty || user == null) return;
 
     await FirebaseFirestore.instance
         .collection("boards")
@@ -29,11 +30,16 @@ class _ChatScreenState extends State<ChatScreen> {
         .collection("messages")
         .add({
       "message": _msgController.text.trim(),
-      "sender": user?.email ?? "Unknown",
+      "sender": user.email ?? "Unknown", // username or display name could go here
       "createdAt": Timestamp.now(),
     });
 
     _msgController.clear();
+  }
+
+  String _formatTimestamp(Timestamp ts) {
+    final dt = ts.toDate();
+    return DateFormat('MM/dd/yyyy • HH:mm').format(dt);
   }
 
   @override
@@ -45,7 +51,7 @@ class _ChatScreenState extends State<ChatScreen> {
       body: Column(
         children: [
           Expanded(
-            child: StreamBuilder(
+            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
               stream: FirebaseFirestore.instance
                   .collection("boards")
                   .doc(widget.boardId)
@@ -53,8 +59,17 @@ class _ChatScreenState extends State<ChatScreen> {
                   .orderBy("createdAt", descending: false)
                   .snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'No messages yet. Start the conversation!',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  );
                 }
 
                 final docs = snapshot.data!.docs;
@@ -63,12 +78,18 @@ class _ChatScreenState extends State<ChatScreen> {
                   padding: const EdgeInsets.all(12),
                   itemCount: docs.length,
                   itemBuilder: (context, index) {
-                    var msg = docs[index].data();
+                    final msg = docs[index].data();
+                    final sender = msg['sender'] ?? 'Unknown';
+                    final message = msg['message'] ?? '';
+                    final createdAt = msg['createdAt'] as Timestamp;
+
                     return Container(
                       margin: const EdgeInsets.symmetric(vertical: 6),
                       child: ListTile(
-                        title: Text(msg["message"]),
-                        subtitle: Text("${msg["sender"]} • ${msg["createdAt"].toDate()}"),
+                        title: Text(message),
+                        subtitle: Text(
+                          '$sender • ${_formatTimestamp(createdAt)}',
+                        ),
                         tileColor: Colors.blue.shade50,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),

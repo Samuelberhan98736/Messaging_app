@@ -1,10 +1,12 @@
-import 'package: flutter/material.dart';
-import 'package:firebase_core/firebase-core.dart';
-import 'package: provider/provider.dart';
-import 'app/app_router.dart';
-import 'services/auth_service.dart';
-import 'screens/splash_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 
+// App imports
+import 'app/app_router.dart';
+import 'app/theme.dart';
+import 'services/auth_service.dart';
+import 'screens/splash/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,16 +29,15 @@ class MessageBoardApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'Message Board App',
 
-        // Theme (you can modify later)
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-          useMaterial3: true
-        ),
+        // THEME
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.light,
 
-        // Routes
+        // ROUTES
         onGenerateRoute: AppRouter.generateRoute,
 
-        // First screen
+        // SPLASH SCREEN
         home: const SplashScreen(),
       ),
     );
